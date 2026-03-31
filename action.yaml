@@ -5,7 +5,7 @@ branding:
   color: 'green'
 inputs:
   version:
-    description: 'Version of Apify CLI to install (e.g. "1.1.1", "latest"). Defaults to latest stable version.'
+    description: 'Version of Apify CLI to install (e.g. "1.1.1", "latest", "beta"). Defaults to latest stable version. Use "beta" to install the latest prerelease.'
     required: false
     default: 'latest'
   token:
@@ -14,6 +14,25 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Resolve version
+      id: resolve-version
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        if [ "$INPUT_VERSION" = "beta" ]; then
+          RESOLVED=$(gh api repos/apify/apify-cli/releases --jq '[.[] | select(.prerelease)] | .[0].tag_name' | sed 's/^v//')
+          if [ -z "$RESOLVED" ]; then
+            echo "::error::No prerelease version found for apify-cli"
+            exit 1
+          fi
+          echo "version=$RESOLVED" >> "$GITHUB_OUTPUT"
+          echo "Resolved beta to version $RESOLVED"
+        else
+          echo "version=$INPUT_VERSION" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Install Apify CLI
       uses: jdx/mise-action@v2
       with:
@@ -22,8 +41,17 @@ runs:
           [settings]
           idiomatic_version_file_enable_tools = []
 
-          [tools]
-          "ubi:apify/apify-cli" = { version = "${{ inputs.version }}", matching = "apify", exe = "apify" }
+          [tools."github:apify/apify-cli"]
+          version = "${{ steps.resolve-version.outputs.version }}"
+          bin = "apify"
+
+          [tools."github:apify/apify-cli".platforms]
+          linux-x64 = { asset_pattern = "apify-*-linux-x64" }
+          linux-arm64 = { asset_pattern = "apify-*-linux-arm64" }
+          macos-x64 = { asset_pattern = "apify-*-darwin-x64" }
+          macos-arm64 = { asset_pattern = "apify-*-darwin-arm64" }
+          windows-x64 = { asset_pattern = "apify-*-windows-x64.exe" }
+          windows-arm64 = { asset_pattern = "apify-*-windows-arm64.exe" }
 
     - name: Login to Apify (Unix)
       if: runner.os != 'Windows'
