@@ -10,7 +10,7 @@ This GitHub action sets up the Apify CLI in your GitHub Actions workflow. It ins
 
 ## Inputs
 
-**version** (optional): Version of Apify CLI to install (e.g. "1.1.1", "latest"). Defaults to the latest stable version.
+**version** (optional): Version of Apify CLI to install (e.g. "1.1.1", "latest", "beta"). Defaults to the latest stable version. Use "beta" to install the latest prerelease version.
 
 **token** (required): Your Apify token for authentication. The CLI will be automatically logged in with this token. See the [Apify integration docs](https://docs.apify.com/platform/integrations/api#api-token) for instructions on how to find it.
 
@@ -53,6 +53,24 @@ jobs:
         uses: apify/setup-apify-cli-action@main
         with:
           version: '1.1.1'
+          token: ${{ secrets.APIFY_TOKEN }}
+```
+
+### Setup with latest beta (prerelease) version
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Setup Apify CLI
+        uses: apify/setup-apify-cli-action@main
+        with:
+          version: 'beta'
           token: ${{ secrets.APIFY_TOKEN }}
 ```
 
