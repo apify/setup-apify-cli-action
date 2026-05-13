@@ -1,0 +1,17 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  floating-tags:
+    name: Publish floating tags
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish floating tags
+        uses: actions/publish-action@v0.3.0
+        with:
+          source-tag: ${{ github.event.release.tag_name }}
