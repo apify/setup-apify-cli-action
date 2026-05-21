@@ -1,0 +1,10 @@
+name: CI (PR)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    name: CI checks
+    uses: ./.github/workflows/_checks.yml

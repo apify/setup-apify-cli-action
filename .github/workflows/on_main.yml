@@ -1,11 +1,16 @@
-name: Release
+name: CI (main)
 
 on:
   push:
     branches: [main]
 
 jobs:
+  checks:
+    name: CI checks
+    uses: ./.github/workflows/_checks.yml
+
   release:
+    needs: checks
     name: Create release
     runs-on: ubuntu-latest
     permissions:
